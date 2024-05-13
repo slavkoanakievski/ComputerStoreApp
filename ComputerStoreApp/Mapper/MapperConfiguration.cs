@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ComputerStoreApp.Models;
+using ComputerStoreApp.Models.Dtos;
 using ComputerStoreApp.Models.Resources;
 
 namespace ComputerStoreApp.Mapper
@@ -9,6 +10,7 @@ namespace ComputerStoreApp.Mapper
         public MapperConfiguration()
         {
             CreateMap<Category, CategoryResource>().ReverseMap();
+            CreateMap<Category, CategoryDto>().ReverseMap();
         }
     }
 }

@@ -5,6 +5,7 @@ using ComputerStoreApp.Repository.Interface;
 using ComputerStoreApp.Service;
 using ComputerStoreApp.Service.Interface;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +13,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultString");
 builder.Services.AddDbContext<CoreDbContext>(options =>
-    options.UseSqlServer(connectionString));
+{
+    options.UseSqlServer(connectionString);
+    options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+}
+);
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddControllers();
