@@ -40,5 +40,16 @@ namespace ComputerStoreApp.Controllers
         {
             return await _productService.DeleteProductAsync(productId);
         }
+
+        [HttpPut("product/edit/{productId}")]
+        public async Task<ProductResource> UpdateProductAsync(int productId, [FromBody] ProductDto productDto)
+        {
+            if (productId <= 0)
+            {
+                throw new Exception(message: "Invalid product id");
+            }
+
+            return await _productService.UpdateProductAsync(productId, productDto);
+        }
     }
 }

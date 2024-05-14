@@ -30,5 +30,10 @@ namespace ComputerStoreApp.Repository
                 .Where(pc => pc.ProductId == productId && pc.CategoryId == categoryId)
                 .FirstOrDefaultAsync();
         }
+
+        public async Task<List<ProductCategory>> GetProductCategoriesByProductIdAsync(int productId)
+        {
+            return await _coreDbContext.ProductCategories.Where(pc => pc.ProductId == productId).ToListAsync();
+        }
     }
 }

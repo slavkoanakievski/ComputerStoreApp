@@ -8,6 +8,6 @@ namespace ComputerStoreApp.Repository.Interface
         public Task DeleteProductCategories(List<ProductCategory> productCategories);
 
         public Task<ProductCategory> GetProductCategory(int productId, int categoryId);
-
+        public Task<List<ProductCategory>> GetProductCategoriesByProductIdAsync(int productId);
     }
 }

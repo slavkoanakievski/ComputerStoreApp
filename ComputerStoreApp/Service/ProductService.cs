@@ -158,5 +158,90 @@ namespace ComputerStoreApp.Service
             await _productRepository.DeleteProductAsync(productId);
             return productId;
         }
+
+        public async Task<ProductResource> UpdateProductAsync(int productId, ProductDto productDto)
+        {
+            if (productDto == null)
+            {
+                throw new Exception(message: "Invalid product data");
+            }
+
+            var existingProduct = await _productRepository.GetProductAsync(productId);
+
+            if (existingProduct == null)
+            {
+                throw new Exception(message: $"Product with id {productId} not found");
+            }
+
+            existingProduct.ProductName = productDto.ProductName;
+            existingProduct.ProductDescription = productDto.ProductDescription;
+            existingProduct.ProductPrice = productDto.ProductPrice;
+            existingProduct.ProductStock = productDto.ProductStock;
+
+            await _productRepository.UpdateProductAsync(existingProduct);
+
+            await UpdateProductCategoriesAsync(productId, productDto.Categories);
+
+            return await GetProductResourceAsync(productId);
+        }
+
+
+        private async Task UpdateProductCategoriesAsync(int productId, IEnumerable<int> categoryIds)
+        {
+            Product product = await _productRepository.GetProductAsync(productId);
+            List<int> existingCategories = product.ProductCategories.Select(pc => pc.CategoryId).ToList();
+            List<int> categoriesToAdd = categoryIds.Except(existingCategories).ToList();
+
+            var categoriesToRemove = existingCategories.Where(categoryId => !categoryIds.Contains(categoryId)).ToList();
+            //List<ProductCategory> productCategories = new List<ProductCategory>();
+
+            //foreach (int catId in categoriesToRemove)
+            //{
+            //    ProductCategory productCategory = await _productCategoryRepository
+            //        .GetProductCategory(productId, catId);
+            //    productCategories.Add(productCategory);
+            //}
+
+            //await _productCategoryRepository.DeleteProductCategories(productCategories);
+
+            var newProductCategories = categoriesToAdd.Select(c => new ProductCategory
+            {
+                ProductId = productId,
+                CategoryId = c
+            }).ToList();
+           
+            await _productCategoryRepository.AddProductCategoriesAsync(newProductCategories);
+        }
+
+        private async Task<ProductResource> GetProductResourceAsync(int productId)
+        {
+            var product = await _productRepository.GetProductAsync(productId);
+
+            if (product == null)
+            {
+                return null;
+            }
+
+            List<CategoryResource> categories = product.ProductCategories.Select(pc =>
+            {
+                Category cat = _categoryRepository.GetCategoryAsync(pc.CategoryId).Result;
+                return cat != null ? new CategoryResource
+                {
+                    CategoryId = pc.CategoryId,
+                    CategoryName = cat.CategoryName,
+                    CategoryDescription = cat.CategoryDescription
+                } : null;
+            }).ToList();
+
+            return new ProductResource
+            {
+                ProductId = product.ProductId,
+                ProductName = product.ProductName,
+                ProductDescription = product.ProductDescription,
+                ProductPrice = product.ProductPrice,
+                ProductStock = product.ProductStock,
+                Categories = categories
+            };
+        }
     }
 }

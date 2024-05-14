@@ -1,4 +1,5 @@
-﻿using ComputerStoreApp.Models.Dtos;
+﻿using ComputerStoreApp.Models;
+using ComputerStoreApp.Models.Dtos;
 using ComputerStoreApp.Models.Resources;
 
 namespace ComputerStoreApp.Service.Interface
@@ -8,6 +9,7 @@ namespace ComputerStoreApp.Service.Interface
         Task<IEnumerable<ProductResource>> GetAllProductsAsync();
         Task<ProductResource> GetProductAsync(int productId);
         Task<ProductResource> AddProductAsync(ProductDto productDto);
+        Task<ProductResource> UpdateProductAsync(int productId, ProductDto productDto);
         Task<int> DeleteProductAsync(int productId);
     }
 }

@@ -7,6 +7,7 @@ namespace ComputerStoreApp.Repository.Interface
         Task<IEnumerable<Product>> GetAllProductsAsync();
         Task<Product> GetProductAsync(int productId);
         Task<Product> AddProductAsync(Product product);
+        Task UpdateProductAsync(Product product);
         Task<Product> DeleteProductAsync(int productId);
     }
 }

@@ -54,5 +54,11 @@ namespace ComputerStoreApp.Repository
             await _coreDbContext.SaveChangesAsync();
             return product;
         }
+
+        public async Task UpdateProductAsync(Product product)
+        {
+            _coreDbContext.Update(product);
+            await _coreDbContext.SaveChangesAsync();
+        }
     }
 }
