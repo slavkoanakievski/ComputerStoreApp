@@ -11,6 +11,8 @@ namespace ComputerStoreApp.Mapper
         {
             CreateMap<Category, CategoryResource>().ReverseMap();
             CreateMap<Category, CategoryDto>().ReverseMap();
+            CreateMap<Product, ProductResource>().ReverseMap();
+
         }
     }
 }

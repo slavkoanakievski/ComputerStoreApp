@@ -30,7 +30,7 @@ namespace ComputerStoreApp.Controllers
             return await _categoryService.GetCategoryAsync(categoryId);
         }
 
-        [HttpPost("add")]
+        [HttpPost("category/add")]
         public async Task<CategoryResource> AddCategory([FromBody] CategoryDto categoryDto)
         {
             return await _categoryService.AddCategoryAsync(categoryDto);
@@ -42,7 +42,7 @@ namespace ComputerStoreApp.Controllers
             return await _categoryService.EditCategoryAsync(categoryId, categoryDto);
         }
 
-        [HttpDelete("delete/{categoryId}")]
+        [HttpDelete("delete/category/{categoryId}")]
         public async Task<CategoryResource> DeleteCategory(int categoryId)
         {
             return await _categoryService.DeleteCategoryAsync(categoryId);
