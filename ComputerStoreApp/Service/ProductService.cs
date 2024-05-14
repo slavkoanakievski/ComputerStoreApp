@@ -136,7 +136,7 @@ namespace ComputerStoreApp.Service
         public async Task<int> DeleteProductAsync(int productId)
         {
             Product product = await _productRepository.GetProductAsync(productId);
-            if(product  == null)
+            if (product == null)
             {
                 throw new Exception(message: "There is no product with id: " + productId);
             }
@@ -145,9 +145,10 @@ namespace ComputerStoreApp.Service
                 .Select(pc => pc.CategoryId)
                 .ToList();
 
-            List<ProductCategory> productCategories  = new List<ProductCategory>();
+            List<ProductCategory> productCategories = new List<ProductCategory>();
 
-            foreach (int categoryId in categories) {
+            foreach (int categoryId in categories)
+            {
                 ProductCategory productCategory = await _productCategoryRepository
                     .GetProductCategory(productId, categoryId);
                 productCategories.Add(productCategory);
@@ -209,7 +210,7 @@ namespace ComputerStoreApp.Service
                 ProductId = productId,
                 CategoryId = c
             }).ToList();
-           
+
             await _productCategoryRepository.AddProductCategoriesAsync(newProductCategories);
         }
 
@@ -243,5 +244,71 @@ namespace ComputerStoreApp.Service
                 Categories = categories
             };
         }
+
+        public async Task UpdateProductStock(List<StockInfoDto> stockInfoDtos)
+        {
+            foreach (StockInfoDto stockInfoDto in stockInfoDtos)
+            {
+                List<Category> addedCategories = await AddMissingCategoies(stockInfoDto);
+                Product product = await AddOrUpdateProductAsync(stockInfoDto);
+
+                List<ProductCategory> productCategories = addedCategories
+                .Select(c => new ProductCategory
+                {
+                    ProductId = product.ProductId,
+                    CategoryId = c.CategoryId,
+                    //Category = c,
+                    //Product = addedProduct
+                }).ToList();
+
+                await _productCategoryRepository.AddProductCategoriesAsync(productCategories);
+            }
+        }
+
+        private async Task<List<Category>> AddMissingCategoies(StockInfoDto stockInfoDto)
+        {
+            IEnumerable<string> categoryNames = stockInfoDto?.CategoryNames;
+            IEnumerable<Category> categories = await _categoryRepository.GetAllCategoriesAsync();
+            IEnumerable<string> existingCategoryNames = categories.Select(c => c.CategoryName);
+
+            IEnumerable<string> categoryNamesToAdd = categoryNames?.Except(existingCategoryNames).ToList();
+
+            List<Category> addedCategories = new List<Category>();
+
+            foreach (string categoryName in categoryNamesToAdd)
+            {
+               Category newCat = await _categoryRepository.AddCategoryAsync(new Category
+                {
+                    CategoryName = categoryName
+                });
+
+                addedCategories.Add(newCat);
+
+            }
+            return addedCategories;
+        }
+
+        private async Task<Product> AddOrUpdateProductAsync(StockInfoDto stockInfoDto)
+        {
+            Product existingProduct = await _productRepository.GetProductByNameAsync(stockInfoDto.Name);
+
+            if (existingProduct == null)
+            {
+                return await _productRepository.AddProductAsync(new Product
+                {
+                    ProductName = stockInfoDto.Name,
+                    ProductPrice = stockInfoDto.Price,
+                    ProductStock = stockInfoDto.Quantity
+                });
+            }
+            else
+            {
+                existingProduct.ProductStock += stockInfoDto.Quantity;
+                await _productRepository.UpdateProductAsync(existingProduct);
+                return existingProduct;
+            }
+        }
+
+
     }
 }

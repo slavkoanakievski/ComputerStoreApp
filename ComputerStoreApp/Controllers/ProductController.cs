@@ -51,5 +51,19 @@ namespace ComputerStoreApp.Controllers
 
             return await _productService.UpdateProductAsync(productId, productDto);
         }
+
+        [HttpPost("product/update-stock")]
+        public async Task<IActionResult> ProductStock([FromBody] List<StockInfoDto> stockInfoDtos)
+        {
+            try
+            {
+                await _productService.UpdateProductStock(stockInfoDtos);
+                return Ok("Product stock imported successfully!");
+            }
+            catch
+            {
+                throw new Exception(message: "An error occurred while updating product stock");
+            }
+        }
     }
 }

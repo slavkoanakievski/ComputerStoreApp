@@ -60,5 +60,22 @@ namespace ComputerStoreApp.Repository
             _coreDbContext.Update(product);
             await _coreDbContext.SaveChangesAsync();
         }
+
+        public async Task<Product> GetProductByNameAsync(string productName)
+        {
+            Product product = await _coreDbContext.Products
+               .Where(p => p.ProductName == productName)
+                .Include(p => p.ProductCategories)
+               .FirstOrDefaultAsync();
+
+            if (product != null)
+            {
+                return product;
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 }
