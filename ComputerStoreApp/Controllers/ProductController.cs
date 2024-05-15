@@ -71,8 +71,8 @@ namespace ComputerStoreApp.Controllers
         {
             try
             {
-                double totalDiscount = await _productService.CalculateDiscountForItems(purchasedOrderItemDtos);
-                return Ok(totalDiscount);
+                CalculatedDiscountDto calculatedDiscountDto = await _productService.CalculateDiscountForItems(purchasedOrderItemDtos);
+                return Ok(calculatedDiscountDto);
             }
             catch
             {

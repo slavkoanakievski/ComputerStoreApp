@@ -308,7 +308,7 @@ namespace ComputerStoreApp.Service
             }
         }
 
-        public async Task<double> CalculateDiscountForItems(List<PurchasedOrderItemDto> purchasedOrderItemDtos)
+        public async Task<CalculatedDiscountDto> CalculateDiscountForItems(List<PurchasedOrderItemDto> purchasedOrderItemDtos)
         {
             await ValidateProductStock(purchasedOrderItemDtos);
 
@@ -316,7 +316,7 @@ namespace ComputerStoreApp.Service
             //IEnumerable<Task<Product>> productTasks = purchasedOrderItemDtos.Select(async item => await _productRepository.GetProductAsync(item.ProductId));
             //var products = await Task.WhenAll(productTasks);
 
-            foreach(var item in purchasedOrderItemDtos)
+            foreach (var item in purchasedOrderItemDtos)
             {
                 Product product = await _productRepository.GetProductAsync(item.ProductId);
                 products.Add(product);
@@ -327,6 +327,9 @@ namespace ComputerStoreApp.Service
                 .GroupBy(item => item.Result.CategoryId);
 
             double totalDiscount = 0;
+            double totalPrice = 0;
+            int numberOfDiscountedProducts = 0;
+
             foreach (var itemGroup in itemsByCategory)
             {
                 var firstItem = itemGroup.First();
@@ -334,18 +337,29 @@ namespace ComputerStoreApp.Service
 
                 if (itemGroup.Count() > 1)
                 {
-                    discount = (double)firstItem.Result.Product.ProductPrice * 0.05;
+                    var firstProductItem = purchasedOrderItemDtos.Where(p => p.ProductId == firstItem.Result.Product.ProductId).FirstOrDefault();
+                    discount = (double)firstProductItem.Price * 0.05;
+                    totalPrice = totalPrice + (firstProductItem.Price * firstProductItem.Quantity);
+                    numberOfDiscountedProducts++;
                 }
 
                 foreach (var item in itemGroup.Skip(1))
                 {
                     item.Result.Product.ProductPrice = (decimal)((double)item.Result.Product.ProductPrice - discount);
+                    var productFromCart = purchasedOrderItemDtos.Where(p => p.ProductId == item.Result.Product.ProductId).FirstOrDefault();
+                    totalPrice = totalPrice + ((double)productFromCart.Price * productFromCart.Quantity);
                 }
 
-                totalDiscount += discount * (itemGroup.Count() - 1);
+                totalDiscount += discount; //* (itemGroup.Count() - 1);
             }
 
-            return totalDiscount;
+            return new CalculatedDiscountDto
+            {
+                Discount = totalDiscount,
+                OrderTotalPrice = totalPrice,
+                OrderDiscountedPrice = totalPrice - totalDiscount,
+                NumberOfDiscountedProducts = numberOfDiscountedProducts
+            };
 
         }
 
