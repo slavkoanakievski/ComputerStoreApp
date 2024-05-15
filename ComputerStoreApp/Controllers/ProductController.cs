@@ -65,5 +65,20 @@ namespace ComputerStoreApp.Controllers
                 throw new Exception(message: "An error occurred while updating product stock");
             }
         }
+
+        [HttpPost("calculate-discount-for-items")]
+        public async Task<IActionResult> CalculateDiscountForItems([FromBody] List<PurchasedOrderItemDto> purchasedOrderItemDtos)
+        {
+            try
+            {
+                double totalDiscount = await _productService.CalculateDiscountForItems(purchasedOrderItemDtos);
+                return Ok(totalDiscount);
+            }
+            catch
+            {
+                throw;
+            }
+
+        }
     }
 }

@@ -77,5 +77,14 @@ namespace ComputerStoreApp.Repository
                 return null;
             }
         }
+
+        public async Task<Dictionary<int, int>> GetProductStocksAsync(List<int> productIds)
+        {
+            var productStocks = await _coreDbContext.Set<Product>()
+              .Where(p => productIds.Contains(p.ProductId))
+              .ToDictionaryAsync(p => p.ProductId, p => p.ProductStock ?? 0);
+
+            return productStocks;
+        }
     }
 }

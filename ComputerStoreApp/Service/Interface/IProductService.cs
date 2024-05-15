@@ -12,5 +12,6 @@ namespace ComputerStoreApp.Service.Interface
         Task<ProductResource> UpdateProductAsync(int productId, ProductDto productDto);
         Task<int> DeleteProductAsync(int productId);
         Task UpdateProductStock(List<StockInfoDto> stockInfoDtos);
+        Task<double> CalculateDiscountForItems(List<PurchasedOrderItemDto> purchasedOrderItemDtos);
     }
 }

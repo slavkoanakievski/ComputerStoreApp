@@ -2,7 +2,6 @@
 using ComputerStoreApp.Models;
 using ComputerStoreApp.Models.Dtos;
 using ComputerStoreApp.Models.Resources;
-using ComputerStoreApp.Repository;
 using ComputerStoreApp.Repository.Interface;
 using ComputerStoreApp.Service.Interface;
 
@@ -277,7 +276,7 @@ namespace ComputerStoreApp.Service
 
             foreach (string categoryName in categoryNamesToAdd)
             {
-               Category newCat = await _categoryRepository.AddCategoryAsync(new Category
+                Category newCat = await _categoryRepository.AddCategoryAsync(new Category
                 {
                     CategoryName = categoryName
                 });
@@ -309,6 +308,60 @@ namespace ComputerStoreApp.Service
             }
         }
 
+        public async Task<double> CalculateDiscountForItems(List<PurchasedOrderItemDto> purchasedOrderItemDtos)
+        {
+            await ValidateProductStock(purchasedOrderItemDtos);
 
+            List<Product> products = new List<Product>();
+            //IEnumerable<Task<Product>> productTasks = purchasedOrderItemDtos.Select(async item => await _productRepository.GetProductAsync(item.ProductId));
+            //var products = await Task.WhenAll(productTasks);
+
+            foreach(var item in purchasedOrderItemDtos)
+            {
+                Product product = await _productRepository.GetProductAsync(item.ProductId);
+                products.Add(product);
+            }
+
+            var itemsByCategory = products
+                .SelectMany(item => item.ProductCategories, async (item, category) => new { Product = await _productRepository.GetProductAsync(item.ProductId), CategoryId = category.CategoryId })
+                .GroupBy(item => item.Result.CategoryId);
+
+            double totalDiscount = 0;
+            foreach (var itemGroup in itemsByCategory)
+            {
+                var firstItem = itemGroup.First();
+                double discount = 0;
+
+                if (itemGroup.Count() > 1)
+                {
+                    discount = (double)firstItem.Result.Product.ProductPrice * 0.05;
+                }
+
+                foreach (var item in itemGroup.Skip(1))
+                {
+                    item.Result.Product.ProductPrice = (decimal)((double)item.Result.Product.ProductPrice - discount);
+                }
+
+                totalDiscount += discount * (itemGroup.Count() - 1);
+            }
+
+            return totalDiscount;
+
+        }
+
+        private async Task ValidateProductStock(List<PurchasedOrderItemDto> purchasedOrderItemDtos)
+        {
+            List<int> productIds = purchasedOrderItemDtos.Select(p => p.ProductId).ToList();
+            Dictionary<int, int> productStocks = await _productRepository.GetProductStocksAsync(productIds);
+
+            foreach (var item in purchasedOrderItemDtos)
+            {
+                var availableStock = productStocks.FirstOrDefault(s => s.Key == item.ProductId).Value;
+                if (availableStock < item.Quantity)
+                {
+                    throw new Exception($"Insufficient stock for product with id: {item.ProductId}");
+                }
+            }
+        }
     }
 }

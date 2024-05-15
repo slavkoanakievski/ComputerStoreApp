@@ -10,5 +10,6 @@ namespace ComputerStoreApp.Repository.Interface
         Task<Product> AddProductAsync(Product product);
         Task UpdateProductAsync(Product product);
         Task<Product> DeleteProductAsync(int productId);
+        Task<Dictionary<int, int>> GetProductStocksAsync(List<int> productIds);
     }
 }
