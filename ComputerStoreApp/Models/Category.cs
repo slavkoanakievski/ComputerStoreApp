@@ -22,5 +22,19 @@ namespace ComputerStoreApp.Models
 
         [InverseProperty(nameof(ProductCategory.Category))]
         public virtual ICollection<ProductCategory> ProductCategories { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null || GetType() != obj.GetType())
+                return false;
+
+            Category other = (Category)obj;
+            return CategoryId == other.CategoryId && CategoryName == other.CategoryName;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(CategoryId, CategoryName);
+        }
     }
 }
